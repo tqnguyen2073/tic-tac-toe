@@ -16,6 +16,7 @@ def initial_state():
     An empty 3x3 grid represented by a list of lists.
     """
     return [[EMPTY, EMPTY, EMPTY],
+            [EMPTY, EMPTY, EMPTY],
             [EMPTY, EMPTY, EMPTY]]
 
 
