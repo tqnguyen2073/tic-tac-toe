@@ -5,6 +5,7 @@ Tic Tac Toe Player
 import math
 import copy
 
+# Constants for player markers and empty cell
 X = "X"
 O = "O"
 EMPTY = None
@@ -12,28 +13,30 @@ EMPTY = None
 def initial_state():
     """
     Returns starting state of the board.
+    An empty 3x3 grid represented by a list of lists.
     """
     return [[EMPTY, EMPTY, EMPTY],
-            [EMPTY, EMPTY, EMPTY],
             [EMPTY, EMPTY, EMPTY]]
 
 
 def player(board):
     """
-    Returns player who has the next turn on a board.
+    Returns the player whose turn is next on the board.
+    Arguments:board -- The current state of the board.
+    Returns:'X' if it is X's turn, 'O' if it is O's turn.
     """
     x_count = sum(row.count(X) for row in board)
     o_count = sum(row.count(O) for row in board)
 
-    if x_count <= o_count:
-        return X
-    else:
-        return O
+    # X plays first, so if they have played fewer or equal times to O, it is X's turn
+    return X if x_count <= o_count else O
 
 
 def actions(board):
     """
-    Returns set of all possible actions (i, j) available on the board.
+    Returns a set of all possible actions (i, j) available on the board.
+    Arguments:board -- The current state of the board.
+    Returns:A set of tuples (i, j) where 'i' and 'j' are the row and column indices of empty cells.
     """
     possible_moves = set()
 
@@ -48,6 +51,9 @@ def actions(board):
 def result(board, action):
     """
     Returns the board that results from making move (i, j) on the board.
+    Arguments:board -- The current state of the board.
+              action -- A tuple (i, j) representing the move position.
+    Returns:A new board with the move applied, without modifying the original board.
     """
     i, j = action
 
@@ -67,6 +73,8 @@ def result(board, action):
 def winner(board):
     """
     Returns the winner of the game, if there is one.
+    Arguments:board -- The current state of the board.
+    Returns:'X' if X has won, 'O' if O has won, None otherwise.
     """
     # Check rows
     for row in board:
@@ -90,7 +98,9 @@ def winner(board):
 
 def terminal(board):
     """
-    Returns True if game is over, False otherwise.
+    Returns True if the game is over, False otherwise.
+    Arguments:board -- The current state of the board.
+    Returns:True if there's a winner or if the board is full, False otherwise.
     """
     # Check if there's a winner
     if winner(board) is not None:
@@ -107,7 +117,9 @@ def terminal(board):
 
 def utility(board):
     """
-    Returns 1 if X has won the game, -1 if O has won, 0 otherwise.
+    Returns the utility of the board state.
+    Arguments:board -- The current state of the board.
+    Returns:1 if X has won, -1 if O has won, 0 if it's a tie.
     """
     win = winner(board)
     if win == X:
@@ -120,27 +132,39 @@ def utility(board):
 
 def minimax(board):
     """
-    Returns the optimal action for the current player on the board.
+    Returns the optimal action for the current player on the board using the Minimax algorithm.
+    Arguments:board -- The current state of the board.
+    Returns:The best move (i, j) for the current player based on minimax strategy.
     """
+
+    # If game is over, return None
     if terminal(board):
         return None
 
     current_player = player(board)
 
+    # Helper function to calculate the max value for 'X'
     def max_value(board):
+        # If game is over, return the utility score
         if terminal(board):
             return utility(board)
 
+        # Set initial value to negative infinity for maximization
         v = -math.inf
+        # Calculate the min value for each possible move
         for action in actions(board):
             v = max(v, min_value(result(board, action)))
         return v
 
+    # Helper function to calculate the min value for 'O'
     def min_value(board):
+        # If game is over, return the utility score
         if terminal(board):
             return utility(board)
 
+        # Set initial value to positive infinity for minimization
         v = math.inf
+        # Calculate the max value for each possible move
         for action in actions(board):
             v = min(v, max_value(result(board, action)))
         return v
@@ -149,6 +173,7 @@ def minimax(board):
     best_action = None
     if current_player == X:
         best_value = -math.inf
+        # For 'X', find the action that maximizes the minimum possible loss
         for action in actions(board):
             action_value = min_value(result(board, action))
             if action_value > best_value:
@@ -156,6 +181,7 @@ def minimax(board):
                 best_action = action
     else:
         best_value = math.inf
+        # For 'O', find the action that minimizes the maximum possible gain
         for action in actions(board):
             action_value = max_value(result(board, action))
             if action_value < best_value:
@@ -163,4 +189,3 @@ def minimax(board):
                 best_action = action
 
     return best_action
-
