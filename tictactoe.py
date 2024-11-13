@@ -130,63 +130,52 @@ def utility(board):
     else:
         return 0
 
-
-def minimax(board):
+def minimax(board, depth=2):
     """
-    Returns the optimal action for the current player on the board using the Minimax algorithm.
-    Arguments:board -- The current state of the board.
-    Returns:The best move (i, j) for the current player based on minimax strategy.
+    Returns an action based on a depth-limited minimax algorithm.
+    Arguments:
+        board -- The current state of the board.
+        depth -- The maximum depth of search to introduce imperfection.
+    Returns:A tuple (i, j) for the best move based on limited lookahead.
     """
-
     # If game is over, return None
     if terminal(board):
         return None
 
     current_player = player(board)
 
-    # Helper function to calculate the max value for 'X'
-    def max_value(board):
-        # If game is over, return the utility score
-        if terminal(board):
+    def max_value(board, current_depth):
+        if terminal(board) or current_depth == 0:
             return utility(board)
-
-        # Set initial value to negative infinity for maximization
         v = -math.inf
-        # Calculate the min value for each possible move
         for action in actions(board):
-            v = max(v, min_value(result(board, action)))
+            v = max(v, min_value(result(board, action), current_depth - 1))
         return v
 
-    # Helper function to calculate the min value for 'O'
-    def min_value(board):
-        # If game is over, return the utility score
-        if terminal(board):
+    def min_value(board, current_depth):
+        if terminal(board) or current_depth == 0:
             return utility(board)
-
-        # Set initial value to positive infinity for minimization
         v = math.inf
-        # Calculate the max value for each possible move
         for action in actions(board):
-            v = min(v, max_value(result(board, action)))
+            v = min(v, max_value(result(board, action), current_depth - 1))
         return v
 
-    # Determine the best move for the current player
     best_action = None
     if current_player == X:
         best_value = -math.inf
-        # For 'X', find the action that maximizes the minimum possible loss
         for action in actions(board):
-            action_value = min_value(result(board, action))
+            action_value = min_value(result(board, action), depth - 1)
             if action_value > best_value:
                 best_value = action_value
                 best_action = action
     else:
         best_value = math.inf
-        # For 'O', find the action that minimizes the maximum possible gain
         for action in actions(board):
-            action_value = max_value(result(board, action))
+            action_value = max_value(result(board, action), depth - 1)
             if action_value < best_value:
                 best_value = action_value
                 best_action = action
 
     return best_action
+
+
